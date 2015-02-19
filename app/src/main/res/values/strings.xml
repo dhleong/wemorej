@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Main</string>
+    <string name="app_name">Widget for Wemo</string>
+
+    <string name="main">This app just provides a widget</string>
+
+    <string name="configure">Select a Device</string>
+    <string name="no_devices">No Devices Found</string>
+    <string name="unnamed">(Unnamed)</string>
 </resources>
