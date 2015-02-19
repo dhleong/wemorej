@@ -1,0 +1,28 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.13.+'
+    }
+}
+apply plugin: 'com.android.application'
+
+dependencies {
+    compile 'io.reactivex:rxandroid:0.23.0'
+    compile(project(':lib'))
+}
+
+android {
+    compileSdkVersion 'android-21'
+    buildToolsVersion '21.1.2'
+
+    buildTypes {
+        release {
+            runProguard false
+            proguardFile getDefaultProguardFile('proguard-android.txt')
+        }
+    }
+}
+
+

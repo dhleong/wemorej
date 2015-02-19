@@ -1,0 +1,20 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'me.tatarka:gradle-retrolambda:2.5.0'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'me.tatarka.retrolambda'
+
+dependencies {
+    compile 'com.squareup.okhttp:okhttp:2.2.0'
+    compile 'io.reactivex:rxjava:1.0.6'
+    compile 'javax.jmdns:jmdns:3.4.1'
+
+    testCompile 'junit:junit:4.+'
+    testCompile 'org.assertj:assertj-core:1.6.1'
+}
