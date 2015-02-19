@@ -111,10 +111,11 @@ public class Ssdp {
             final long timeout) {
         final Observable<Info> observable =
                 Observable.create((subscriber) -> {
-            send(newDiscoverMessage(serviceType));
 
             final long timeup = System.currentTimeMillis() + timeout;
             try {
+                send(newDiscoverMessage(serviceType));
+
                 String packet = null;
                 do {
                     int timeleft = (int) Math.abs(timeup
@@ -143,7 +144,7 @@ public class Ssdp {
         return observable.subscribeOn(Schedulers.from(executor));
     }
 
-    void send(final String packet) {
+    void send(final String packet) throws IOException {
         try {
             final byte[] data = packet.getBytes("UTF-8");
             final DatagramPacket datagramPacket = new DatagramPacket(data,
@@ -151,11 +152,8 @@ public class Ssdp {
             socket.setBroadcast(true);
             socket.send(datagramPacket);
         } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            // the universe exploded!
+            new RuntimeException(e);
         }
     }
 
