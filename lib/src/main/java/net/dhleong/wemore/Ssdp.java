@@ -23,7 +23,7 @@ public class Ssdp {
         public final String location;
         public final String host;
 
-        private Info(final String serviceType, final String location) {
+        Info(final String serviceType, final String location) {
             this.serviceType = serviceType;
             this.location = location;
             host = getHost(location);

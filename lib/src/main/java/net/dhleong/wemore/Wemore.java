@@ -66,6 +66,7 @@ public class Wemore {
      */
     public static class Device {
 
+        static final String BASIC_EVENT_PATH = "/upnp/control/basicevent1";
         static final String SOAP_PAYLOAD = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
                 + "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\""
                 + "    s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">"
@@ -73,7 +74,8 @@ public class Wemore {
                 + "  <u:%s xmlns:u=\"urn:Belkin:service:basicevent:1\">"
                 + "   <BinaryState>%s</BinaryState>"
                 + "  </u:%s>"
-                + " </s:Body>" + "</s:Envelope>";
+                + " </s:Body>" 
+                + "</s:Envelope>";
 
         static final XPath xPath = XPathFactory.newInstance().newXPath();
         static final XPathExpression sFriendlyName, sBinaryState;
@@ -193,14 +195,11 @@ public class Wemore {
         Observable<Document> soapRequest(final String method, final String arg) {
             final Observable<Document> obs = Observable.create((subscriber) -> {
                 
-                final String bodyText = String.format(SOAP_PAYLOAD,
-                    method, arg, method);
-                
-
-                final String url = "http://" + info.host + "/upnp/control/basicevent1";
                 final RequestBody body = RequestBody.create(
                     MediaType.parse("text/xml; charset=\"utf-8\""),
-                    bodyText);
+                    soapPayload(method, arg));
+
+                final String url = "http://" + info.host + BASIC_EVENT_PATH;
                 final Request.Builder builder = new Request.Builder()
                     .url(url)
                     .post(body)
@@ -221,6 +220,10 @@ public class Wemore {
             // eclipse whines if I call this directly
             //  above with inline return :(
             return obs.subscribeOn(Schedulers.io());
+        }
+
+        static String soapPayload(final String method, final String arg) {
+            return String.format(SOAP_PAYLOAD, method, arg, method);
         }
     }
 
