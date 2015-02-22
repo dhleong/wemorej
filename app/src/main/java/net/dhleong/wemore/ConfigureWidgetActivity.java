@@ -76,7 +76,7 @@ public class ConfigureWidgetActivity
 
             final Wemore.Device d = getItem(position);
             final String friendlyName = d == null 
-                ? view.getContext().getString(R.string.all)
+                ? view.getContext().getString(R.string.any)
                 : d.getFriendlyName();
             view.setText(TextUtils.isEmpty(friendlyName)
                     ? view.getContext().getString(R.string.unnamed)
@@ -131,12 +131,13 @@ public class ConfigureWidgetActivity
         Wemore.Device device = adapter.getItem(position);
         Log.d(TAG, "Selected: " + device);
         // TODO
-        configureWidget(device == null ? null : device.friendlyName);
+        configureWidget(mAppWidgetId, device == null ? null : device.friendlyName);
     }
 
-    void configureWidget(String friendlyName) {
+    void configureWidget(int widgetId, String friendlyName) {
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-        final RemoteViews views = WidgetProvider.buildRemoteView(this, friendlyName);
+        final RemoteViews views = WidgetProvider.buildRemoteView(
+                this, widgetId, friendlyName);
         appWidgetManager.updateAppWidget(mAppWidgetId, views);
 
         Intent resultValue = new Intent();

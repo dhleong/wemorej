@@ -167,7 +167,7 @@ public class WemoreTest {
         BinaryState state = device.getBinaryState()
                 .toBlocking()
                 .first();
-        // assertThat(state).isEqualTo(BinaryState.ON);
+        assertThat(state).isEqualTo(BinaryState.ON);
         
         device.toggleBinaryState()
             .toBlocking()
@@ -177,7 +177,7 @@ public class WemoreTest {
             .toBlocking()
             .first();
 
-        System.out.println("Again!");
+        System.out.println("Again!" + again);
 
         device
             .toggleBinaryState()

@@ -75,7 +75,7 @@ public class Ssdp {
      *  user has gotten what they came for already
      *  and doesn't care to discovery any more devices
      */
-    private static final int DISCOVER_RECEIVE_TIMEOUT = 500;
+    private static final int DISCOVER_RECEIVE_TIMEOUT = 2000;
 
     private Executor executor = Executors.newSingleThreadExecutor();
     private MulticastSocket socket;
