@@ -10,6 +10,10 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'me.tatarka.retrolambda'
 
+retrolambda {
+  javaVersion JavaVersion.VERSION_1_7
+}
+
 dependencies {
     compile 'com.squareup.okhttp:okhttp:2.2.0'
     compile 'io.reactivex:rxjava:1.0.6'
