@@ -154,7 +154,8 @@ public class WemoreTest {
 
     // annotate and run to test in live
     public void testbed() {
-        final Wemore.Device device = new Wemore().search()
+        final Wemore wemore = new Wemore();
+        final Wemore.Device device = wemore.search()
             .toBlocking()
             .first();
         System.out.println("Received device:" + device);
@@ -166,11 +167,19 @@ public class WemoreTest {
         BinaryState state = device.getBinaryState()
                 .toBlocking()
                 .first();
-        assertThat(state).isEqualTo(BinaryState.ON);
+        // assertThat(state).isEqualTo(BinaryState.ON);
         
         device.toggleBinaryState()
             .toBlocking()
-            .first()
+            .first();
+
+        Device again = wemore.search()
+            .toBlocking()
+            .first();
+
+        System.out.println("Again!");
+
+        device
             .toggleBinaryState()
             .toBlocking()
             .first();

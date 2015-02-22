@@ -69,6 +69,14 @@ public class Ssdp {
     private static final int DEFAULT_PORT = 1900;
     private static final int DEFAULT_MX = 3;
 
+    /**
+     * How long to wait for packets while discovering.
+     *  We use a relatively short loop in case the
+     *  user has gotten what they came for already
+     *  and doesn't care to discovery any more devices
+     */
+    private static final int DISCOVER_RECEIVE_TIMEOUT = 500;
+
     private Executor executor = Executors.newSingleThreadExecutor();
     private MulticastSocket socket;
     InetAddress multicastAddress;
@@ -118,9 +126,12 @@ public class Ssdp {
 
                 String packet = null;
                 do {
-                    int timeleft = (int) Math.abs(timeup
-                            - System.currentTimeMillis());
-                    packet = receive(timeleft);
+                    if (subscriber.isUnsubscribed()) {
+                        // quit early; they've left
+                        return;
+                    }
+
+                    packet = receive(DISCOVER_RECEIVE_TIMEOUT);
                     if (packet == null || !packet.startsWith("HTTP")) {
                         // nothing received, or it was
                         //  the one we sent
