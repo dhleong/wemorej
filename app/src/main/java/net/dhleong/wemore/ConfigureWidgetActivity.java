@@ -36,6 +36,9 @@ public class ConfigureWidgetActivity
 
     static class DeviceAdapter extends BaseAdapter {
 
+        /** special value for selecting "Any Device" */
+        static final Device ANY_DEVICE = null;
+
         List<Wemore.Device> devices = new ArrayList<Wemore.Device>();
 
         public void add(Device device) {
@@ -56,7 +59,7 @@ public class ConfigureWidgetActivity
         @Override
         public long getItemId(int position) {
             Wemore.Device d = getItem(position);
-            if (d == null)
+            if (d == ANY_DEVICE)
                 return 0;
             return d.hashCode(); // shrug?
         }
@@ -75,7 +78,7 @@ public class ConfigureWidgetActivity
             }
 
             final Wemore.Device d = getItem(position);
-            final String friendlyName = d == null 
+            final String friendlyName = d == ANY_DEVICE 
                 ? view.getContext().getString(R.string.any)
                 : d.getFriendlyName();
             view.setText(TextUtils.isEmpty(friendlyName)
@@ -110,7 +113,7 @@ public class ConfigureWidgetActivity
 
         list.setAdapter(adapter);
         list.setOnItemClickListener(this);
-        adapter.add(null);
+        adapter.add(DeviceAdapter.ANY_DEVICE);
 
         multicast = MulticastHelper.acquire(this);
         queryDevices();
@@ -127,20 +130,25 @@ public class ConfigureWidgetActivity
     }
 
     @Override
-    public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-        Wemore.Device device = adapter.getItem(position);
+    public void onItemClick(final AdapterView<?> adapterView, final View view,
+            final int position, final long id) {
+        final Wemore.Device device = adapter.getItem(position);
         Log.d(TAG, "Selected: " + device);
-        // TODO
         configureWidget(mAppWidgetId, device == null ? null : device.friendlyName);
     }
 
-    void configureWidget(int widgetId, String friendlyName) {
+    void configureWidget(final int widgetId, final String friendlyName) {
         final AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
         final RemoteViews views = WidgetProvider.buildRemoteView(
-                this, widgetId, friendlyName);
-        appWidgetManager.updateAppWidget(mAppWidgetId, views);
+                this, widgetId);
 
-        Intent resultValue = new Intent();
+        final Bundle opts = new Bundle();
+        opts.putString(WidgetProvider.OPT_FRIENDLY_NAME, friendlyName);
+
+        appWidgetManager.updateAppWidget(mAppWidgetId, views);
+        appWidgetManager.updateAppWidgetOptions(mAppWidgetId, opts);
+
+        final Intent resultValue = new Intent();
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
         setResult(RESULT_OK, resultValue);
         finish();

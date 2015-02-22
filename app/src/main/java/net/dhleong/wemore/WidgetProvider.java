@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -16,6 +15,8 @@ public class WidgetProvider extends AppWidgetProvider {
 
     static final String TAG = "wemore:WidgetProvider";
     static final String EXTRA_WIDGET_IDS = "widget_ids";
+
+    static final String OPT_FRIENDLY_NAME = "friendly";
 
     @Override
     public void onUpdate(final Context context, final AppWidgetManager appWidgetManager,
@@ -42,17 +43,12 @@ public class WidgetProvider extends AppWidgetProvider {
             for (final int id : widgetIds) {
 
                 // Build the widget update
-                // TODO get the friendlyName
-                final RemoteViews updateViews = buildRemoteView(this, id, null);
+                final RemoteViews updateViews = buildRemoteView(this, id);
                 Log.d(TAG, "update built");
 
                 // Push update for this widget to the home screen
-                // TODO we actually need to respect the widget id
-                //  and fetch the friendlyName, etc.
-                final ComponentName thisWidget = new ComponentName(this,
-                        WidgetProvider.class);
                 final AppWidgetManager manager = AppWidgetManager.getInstance(this);
-                manager.updateAppWidget(thisWidget, updateViews);
+                manager.updateAppWidget(id, updateViews);
                 Log.d(TAG, "widget updated");
             }
         }
@@ -60,7 +56,7 @@ public class WidgetProvider extends AppWidgetProvider {
 
     }
 
-    public static RemoteViews buildRemoteView(final Context context, final int widgetId, final String friendlyName) {
+    public static RemoteViews buildRemoteView(final Context context, final int widgetId) {
         // TODO listen for wifi state change, probably...
         final int layout;
         if (!isOnWifi(context)) {
@@ -71,7 +67,6 @@ public class WidgetProvider extends AppWidgetProvider {
 
         final Intent intent = new Intent(context, WidgetTogglerService.class);
         intent.putExtra(WidgetTogglerService.EXTRA_ID, widgetId);
-        intent.putExtra(WidgetTogglerService.EXTRA_FRIENDLY, friendlyName);
         final RemoteViews views = new RemoteViews(context.getPackageName(), layout);
         views.setOnClickPendingIntent(R.id.icon,
                 PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
