@@ -1,7 +1,7 @@
 package net.dhleong.wemore;
 
+import android.app.IntentService;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.IBinder;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -19,25 +18,24 @@ public class WidgetProvider extends AppWidgetProvider {
     static final String EXTRA_WIDGET_IDS = "widget_ids";
 
     @Override
-    public void onUpdate(Context context, AppWidgetManager appWidgetManager,
-            int[] appWidgetIds) {
+    public void onUpdate(final Context context, final AppWidgetManager appWidgetManager,
+            final int[] appWidgetIds) {
         Log.d(TAG, "onUpdate()");
         // To prevent any ANR timeouts, we perform the update in a service
-        Intent intent = new Intent(context, UpdateService.class);
+        final Intent intent = new Intent(context, UpdateService.class);
         intent.putExtra(EXTRA_WIDGET_IDS, appWidgetIds);
         context.startService(intent);
     }
 
-    public static class UpdateService extends Service {
+    public static class UpdateService extends IntentService {
 
-        @Override
-        public IBinder onBind(Intent intent) {
-            return null;
+        public UpdateService() {
+            super(TAG);
         }
 
         @Override
-        public void onStart(final Intent intent, final int startId) {
-            Log.d(TAG, "onStart()");
+        public void onHandleIntent(final Intent intent) {
+            Log.d(TAG, "onHandleIntent()");
 
             final int[] widgetIds = intent.getIntArrayExtra(EXTRA_WIDGET_IDS);
 
@@ -45,15 +43,15 @@ public class WidgetProvider extends AppWidgetProvider {
 
                 // Build the widget update
                 // TODO get the friendlyName
-                RemoteViews updateViews = buildRemoteView(this, id, null);
+                final RemoteViews updateViews = buildRemoteView(this, id, null);
                 Log.d(TAG, "update built");
 
                 // Push update for this widget to the home screen
                 // TODO we actually need to respect the widget id
                 //  and fetch the friendlyName, etc.
-                ComponentName thisWidget = new ComponentName(this,
+                final ComponentName thisWidget = new ComponentName(this,
                         WidgetProvider.class);
-                AppWidgetManager manager = AppWidgetManager.getInstance(this);
+                final AppWidgetManager manager = AppWidgetManager.getInstance(this);
                 manager.updateAppWidget(thisWidget, updateViews);
                 Log.d(TAG, "widget updated");
             }
@@ -83,9 +81,9 @@ public class WidgetProvider extends AppWidgetProvider {
 
     private static boolean isOnWifi(final Context context) {
 
-        ConnectivityManager conn = (ConnectivityManager) context
+        final ConnectivityManager conn = (ConnectivityManager) context
             .getSystemService(Context.CONNECTIVITY_SERVICE);
-        for (NetworkInfo network : conn.getAllNetworkInfo()) {
+        for (final NetworkInfo network : conn.getAllNetworkInfo()) {
             if (network.isConnectedOrConnecting() 
                     && network.getType() == ConnectivityManager.TYPE_WIFI) {
                 return true;
