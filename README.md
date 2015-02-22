@@ -1,4 +1,4 @@
-# WemoreJ
+# WemoreJ [![Build Status](http://img.shields.io/travis/dhleong/wemorej.svg?style=flat)](https://travis-ci.org/dhleong/wemorej)
 
 The WemoreJ project is two-fold:
 
