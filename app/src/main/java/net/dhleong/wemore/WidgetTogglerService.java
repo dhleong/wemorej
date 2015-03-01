@@ -1,7 +1,9 @@
 package net.dhleong.wemore;
 
 import net.dhleong.wemore.Wemore.Device;
+
 import rx.functions.Func1;
+
 import android.app.IntentService;
 import android.appwidget.AppWidgetManager;
 import android.content.Intent;
@@ -48,17 +50,7 @@ public class WidgetTogglerService extends IntentService {
         markWidgetLoading(widgetId);
 
         Log.d(TAG, "toggle " + friendlyName);
-        final Device device = wemore.search()
-            .filter(new Func1<Device, Boolean>() {
-                @Override
-                public Boolean call(Device device) {
-                    return friendlyName == null
-                        || device.hasFriendlyNameLike(friendlyName);
-                }
-            })
-            .toBlocking()
-            .firstOrDefault(null);
-
+        final Device device = locateDevice(friendlyName);
         if (device == null) {
             // TODO toast?
             Log.w(TAG, "Couldn't find a device to toggle");
@@ -76,6 +68,25 @@ public class WidgetTogglerService extends IntentService {
 
     }
 
+    Wemore.Device locateDevice(final String friendlyName) {
+        try {
+            return wemore.search()
+                .filter(new Func1<Device, Boolean>() {
+                    @Override
+                    public Boolean call(Device device) {
+                        return friendlyName == null
+                            || device.hasFriendlyNameLike(friendlyName);
+                    }
+                })
+                .toBlocking()
+                .firstOrDefault(null);
+        } catch (final Exception e) {
+            Log.w(TAG, "IOE searching for " + friendlyName, e);
+            return null;
+        }
+    }
+
+
     void markWidgetLoading(final int widgetId) {
         widgetMan.updateAppWidget(widgetId,
                 new RemoteViews(this.getPackageName(), R.layout.widget_loading));
@@ -85,4 +96,5 @@ public class WidgetTogglerService extends IntentService {
         widgetMan.updateAppWidget(widgetId,
                 WidgetProvider.buildRemoteView(this, widgetId));
     }
+
 }

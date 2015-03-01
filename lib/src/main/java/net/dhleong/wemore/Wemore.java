@@ -231,12 +231,12 @@ public class Wemore {
 
     static final long DEFAULT_TIMEOUT = 10000;
 
-    private final Ssdp ssdp;
-
     final OkHttpClient okhttp;
 
+    private Ssdp ssdp;
+
     public Wemore() {
-        this(initSsdp());
+        this(null);
     }
     public Wemore(Ssdp ssdp) {
         this.ssdp = ssdp;
@@ -244,19 +244,24 @@ public class Wemore {
         okhttp = new OkHttpClient();
     }
 
-    private static Ssdp initSsdp() {
-        try {
-            return new Ssdp();
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public Observable<Device> search() {
         return search(DEFAULT_TIMEOUT);
     }
 
     public Observable<Device> search(final long timeout) {
+        final Ssdp lastSsdp = this.ssdp;
+        final Ssdp ssdp;
+        if (lastSsdp == null) {
+            try {
+                ssdp = new Ssdp();
+                this.ssdp = ssdp; // save
+            } catch (final IOException e) {
+                return Observable.error(e);
+            }
+        } else {
+            ssdp = lastSsdp;
+        }
+
         return ssdp.discover(BELKIN_CONTROLLEE, timeout)
             .flatMap(info -> new Device(okhttp, info).resolve());
     }

@@ -40,6 +40,18 @@ public class Ssdp {
         }
 
         @Override
+        public boolean equals(final Object other) {
+            return other instanceof Info
+                && ((Info) other).serviceType.equals(serviceType)
+                && ((Info) other).location.equals(location);
+        }
+
+        @Override
+        public int hashCode() {
+            return location.hashCode();
+        }
+
+        @Override
         public String toString() {
             return String.format("ST: %s\r\nLOCATION: %s\r\n", serviceType, location);
         }
@@ -76,6 +88,14 @@ public class Ssdp {
      *  and doesn't care to discovery any more devices
      */
     private static final int DISCOVER_RECEIVE_TIMEOUT = 2000;
+
+    /**
+     * If it's been more than this many ms since we've
+     *  discovered anything and we're still searching,
+     *  send another Discover packet, in case whomever
+     *  we're looking for just missed it
+     */
+    private static final long DISCOVER_RESEND_PERIOD = 1500;
 
     private Executor executor = Executors.newSingleThreadExecutor();
     private MulticastSocket socket;
@@ -122,15 +142,23 @@ public class Ssdp {
 
             final long timeup = System.currentTimeMillis() + timeout;
             try {
-                send(newDiscoverMessage(serviceType));
-
+                long lastDiscovery = 0;
                 String packet = null;
                 do {
+                    if (System.currentTimeMillis() - lastDiscovery
+                            > DISCOVER_RESEND_PERIOD) {
+                        send(newDiscoverMessage(serviceType));
+
+                        // prevent spam
+                        lastDiscovery = System.currentTimeMillis();
+                    }
+
                     if (subscriber.isUnsubscribed()) {
                         // quit early; they've left
                         return;
                     }
 
+                    // receive
                     packet = receive(DISCOVER_RECEIVE_TIMEOUT);
                     if (packet == null || !packet.startsWith("HTTP")) {
                         // nothing received, or it was
@@ -140,6 +168,7 @@ public class Ssdp {
                     }
 
                     // publish!
+                    lastDiscovery = System.currentTimeMillis();
                     subscriber.onNext(Info.from(packet));
                 } while (System.currentTimeMillis() < timeup);
 
@@ -152,7 +181,8 @@ public class Ssdp {
             }
         });
 
-        return observable.subscribeOn(Schedulers.from(executor));
+        return observable.subscribeOn(Schedulers.from(executor))
+            .distinct(); // we ping periodically, so ensure distinctness
     }
 
     void send(final String packet) throws IOException {
